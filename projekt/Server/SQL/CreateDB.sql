@@ -211,6 +211,31 @@ BEGIN
     WHERE ca.courseAssignmentID = assignmentID;
 END;
 
+DROP PROCEDURE IF EXISTS `EpokDBGetModul`;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EpokDBGetModul`(IN kurskod VARCHAR(45))
+BEGIN
+
+	SELECT json_arrayagg(
+		json_object(
+			'modulID', em.modulID,
+			'modulNamn', em.modulNamn
+            )
+		)AS Modules
+        FROM EpokModuler AS em
+        JOIN EpokKursDB AS ek
+        ON em.EpokKursDB_kursID = ek.kursID
+        WHERE ek.kursKod = kurskod;
+
+END;
+
+DROP PROCEDURE IF EXISTS `itsAdminGetUserName`;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `itsAdminGetUserName`(IN userName varchar(45))
+BEGIN
+
+    SELECT personNR FROM itsAdminDB WHERE studUser = userName;
+
+END;
+
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
