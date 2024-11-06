@@ -179,30 +179,36 @@ CREATE TABLE IF NOT EXISTS `mydb`.`LadokDB` (
   PRIMARY KEY (`personNR`))
 ENGINE = InnoDB;
 
-
-
-CREATE FUNCTION getStudentFirstNameByID(studentID INT)
-RETURNS VARCHAR(45) CHARSET utf8mb3
-DETERMINISTIC
+DROP PROCEDURE IF EXISTS `getAssignmentsForCourse`;
+CREATE PROCEDURE `getAssignmentsForCourse`(IN courseID INT)
 BEGIN
-    DECLARE first_name VARCHAR(45);
-    SELECT cs.firstName INTO first_name
-    FROM canvasStudent AS cs
-    WHERE cs.studID = studentID;
-
-    RETURN first_name;
+    SELECT JSON_ARRAYAGG(
+               JSON_OBJECT(
+                   'courseAssignmentID', ca.courseAssignmentID,
+                   'assignmentName', ca.assignmentName
+               )
+           ) AS assignments
+    FROM courseAssignments AS ca
+    WHERE ca.canvasCourse_courseID = courseID;
 END;
 
-CREATE FUNCTION getStudentLastNameByID(studentID INT)
-RETURNS VARCHAR(45) CHARSET utf8mb3
-DETERMINISTIC
-BEGIN
-    DECLARE last_name VARCHAR(45);
-    SELECT cs.lastName INTO last_name
-    FROM canvasStudent AS cs
-    WHERE cs.studID = studentID;
 
-    RETURN last_name;
+DROP PROCEDURE IF EXISTS `getGradesForAssignment`;
+CREATE PROCEDURE `getGradesForAssignment`(IN assignmentID INT)
+BEGIN
+    SELECT JSON_ARRAYAGG(
+               JSON_OBJECT(
+                   'studUser', cs.studUser,
+                   'firstName', cs.firstName,
+                   'lastName', cs.lastName,
+                   'assignmentGrade', ag.assignmentGrade,
+                   'date', ag.date
+               )
+           ) AS grades
+    FROM assignmentGrades AS ag
+    JOIN canvasStudent AS cs ON ag.canvasStudent_studID = cs.studID
+    JOIN courseAssignments AS ca ON ag.gradesToAssignmentFK = ca.courseAssignmentID
+    WHERE ca.courseAssignmentID = assignmentID;
 END;
 
 
