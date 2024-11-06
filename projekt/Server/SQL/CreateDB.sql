@@ -180,6 +180,33 @@ CREATE TABLE IF NOT EXISTS `mydb`.`LadokDB` (
 ENGINE = InnoDB;
 
 
+
+CREATE FUNCTION getStudentFirstNameByID(studentID INT)
+RETURNS VARCHAR(45) CHARSET utf8mb3
+DETERMINISTIC
+BEGIN
+    DECLARE first_name VARCHAR(45);
+    SELECT cs.firstName INTO first_name
+    FROM canvasStudent AS cs
+    WHERE cs.studID = studentID;
+
+    RETURN first_name;
+END;
+
+CREATE FUNCTION getStudentLastNameByID(studentID INT)
+RETURNS VARCHAR(45) CHARSET utf8mb3
+DETERMINISTIC
+BEGIN
+    DECLARE last_name VARCHAR(45);
+    SELECT cs.lastName INTO last_name
+    FROM canvasStudent AS cs
+    WHERE cs.studID = studentID;
+
+    RETURN last_name;
+END;
+
+
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
