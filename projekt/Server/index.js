@@ -20,6 +20,7 @@ const db = mysql.createConnection({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
+    database: process.env.DB_NAME,
     multipleStatements: true
 });
 
@@ -28,8 +29,11 @@ app.get('/', (req, res) => {
     res.send('Server is running with sample data.');
 });
 
-app.get('/getModuler', async (req, res) => {
-    const querystring = 'CALL mydb.EpokDBGetModul(?);';
+
+//"curl "http://localhost:5001/get_Modul?kursKod=D0031N""
+
+app.get('/get_Modul', async (req, res) => {
+    const querystring = 'CALL EpokDBGetModul(?);';
     const kursKod = req.query.kursKod;
     if (!kursKod) {
         res.status(400).send('Missing required query parameter: kursKod');
@@ -46,6 +50,48 @@ app.get('/getModuler', async (req, res) => {
     });
 
 });
+
+//"   curl "http://localhost:5001/getStudentGradesAssignment?assignmentId=1"  "
+app.get('/getStudentGradesAssignment', async (req, res) => {
+    const querystring = 'call getGradesForAssignment(?)';
+    const assignmentId = req.query.assignmentId;
+
+    if (!assignmentId) {
+        res.status(400).send('Missing required query parameter: assignmentId');
+        return
+    }
+    db.query(querystring, [assignmentId], (err, results) => {
+        if (err) {
+            console.error('Failed to fetch grades:', err);
+            res.status(500).send('Failed to fetch grades');
+            return;
+        }
+        res.json(results[0]);
+    });
+
+});
+
+//"curl "http://localhost:5001/get_Persnummer?userName=tomyou-9" "
+app.get('/get_Persnummer', async (req, res) => {
+    const querystring = 'call itsAdminGetUserName(?)';
+    const persnummer = req.query.userName;
+
+    if (!persnummer) {
+        res.status(400).send('Missing required query parameter: userName');
+        return;
+
+    }
+
+    db.query(querystring, [persnummer], (err, results) => {
+        if (err) {
+            console.error('Failed to fetch persnummer:', err);
+            res.status(500).send('Failed to fetch persnummer');
+            return;
+        }
+        res.json(results[0]);
+    });
+});
+
 
 //testing
 
