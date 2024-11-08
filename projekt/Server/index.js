@@ -4,8 +4,8 @@ const mysql = require("mysql2");
 const app = express();
 const PORT = process.env.PORT || 5001;
 require('dotenv').config();
-
-
+const mysql2 = require('mysql2/promise');
+app.use(express.json());
 
 //skapa databas
 exec('node CreateDatabase.js', (error, stdout, stderr) => {
@@ -16,6 +16,15 @@ exec('node CreateDatabase.js', (error, stdout, stderr) => {
     console.log('Database Created Successfully');
 });
 const db = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+    database: process.env.DB_NAME,
+    multipleStatements: true
+});
+
+const db2 = mysql2.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -90,6 +99,44 @@ app.get('/get_Persnummer', async (req, res) => {
         }
         res.json(results[0]);
     });
+});
+
+
+app.post('/reg_Resultat', async (req, res) => {
+    const querystring = 'INSERT INTO LadokDB (personNR, förNamn ,efterNamn, betyg, ExDatum, modul, kursKod, kursNamn) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+
+    if (!req.body.grades || !Array.isArray(req.body.grades) || req.body.grades.length === 0) {
+        res.status(400).send('Body should have a "grades" array with entries');
+        return;
+    }
+
+    for (let i = 0; i < req.body.grades.length; i++) {
+        const entry = req.body.grades[i];
+
+        if (!entry.personNR || !entry.förNamn || !entry.efterNamn|| !entry.betyg || !entry.ExDatum || !entry.modul || !entry.kursKod || !entry.kursNamn) {
+            res.status(400).send(`Missing required body parameters in entry at index ${i}`);
+            return;
+        }
+
+        try {
+            (await db2).query(querystring, [
+                entry.personNR,
+                entry.förNamn,
+                entry.efterNamn,
+                entry.betyg,
+                entry.ExDatum,
+                entry.modul,
+                entry.kursKod,
+                entry.kursNamn
+            ]);
+        } catch (err) {
+            console.error('Failed to register resultat:', err);
+            res.status(500).send('Failed to register all resultat');
+            return;
+        }
+    }
+
+    res.status(200).send('All resultat registered successfully');
 });
 
 
