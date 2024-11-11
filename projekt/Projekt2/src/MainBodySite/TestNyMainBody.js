@@ -2,9 +2,11 @@ import React, {useEffect, useState} from "react";
 import './TestNyMainBody.css';
 
 function Canvas(){
+    const [uppgiftId, setUppgiftId] = useState("1");
+
     return(
         <div className="canvas">
-            <Upper/>
+            <Upper setUppgiftId = {setUppgiftId}/>
             <Middle/>
             <Lower/>
         </div>
@@ -14,6 +16,7 @@ function Canvas(){
 function Upper(){
     const [kursID, setKursID] = useState("1"); // Default to "1" or any initial value
     const [kursKod, setKursKod] = useState(""); // State for kursKod
+
 
     const handleKursIDChange = (event) => {
         setKursID(event.target.value);
@@ -28,7 +31,6 @@ function Upper(){
                     <select value={kursID} onChange={handleKursIDChange}>
                         <option value='1'>1</option>
                         <option value='2'>2</option>
-
                     </select>
                 </div>
             </div>
@@ -55,7 +57,7 @@ function UpperKursKod({ setKursKod }) {
 
     return (
         <div className="upper-kurskod">
-            Kurskod:
+            Skriv in kurskod:
             <div className="boxen">
                 <input
                     className="kursKodText"
@@ -67,7 +69,7 @@ function UpperKursKod({ setKursKod }) {
         </div>
     );
 }
-function UpperUppgift({kursID}) {
+function UpperUppgift({kursID},{setUppgiftId}) {
     const [assignments, setAssignments] = useState([]);
 
     const fetchAssignments = async () => {
@@ -111,7 +113,7 @@ function UpperUppgift({kursID}) {
 
     return (
             <div className="uppgiftDropDown">
-                Uppgift i Canvas
+                Välj Uppgift Att Registrera
                 <select>
                     {assignments.map((assignment, index) => (
                         <option key={index} value={assignment.courseAssignmentID}>{assignment.assignmentName}</option>
@@ -194,8 +196,43 @@ function Middle(){
 function Lower(){
     return(
         <div className="lower">
-            <h1>Lower</h1>
+            <table id={'students'}>
+                <tr>
+                    <th>Namn</th>
+                    <th>Omdöme i Canvas</th>
+                    <th>Betyg i Ladok</th>
+                    <th>Examinationsdatum</th>
+                    <th>Status</th>
+                    <th>Information</th>
+                </tr>
+                <tr>
+                    <td>Henrik Ravnborg</td>
+                    <td>VG (Very Good)</td>
+                    <td>A</td>
+                    <td>2023-05-15</td>
+                    <td>Approved</td>
+                    <td>All assignments completed</td>
+                </tr>
+                <tr>
+                    <td>Maria Andersson</td>
+                    <td>G (Good)</td>
+                    <td>B</td>
+                    <td>2023-06-10</td>
+                    <td>Approved</td>
+                    <td>Additional assignment required</td>
+                </tr>
+                <tr>
+                    <td>Christina Berglund</td>
+                    <td>U (Unsatisfactory)</td>
+                    <td>F</td>
+                    <td>2023-04-20</td>
+                    <td>Not Approved</td>
+                    <td>Re-exam required</td>
+                </tr>
+            </table>
+
         </div>
+
     )
 
 }
