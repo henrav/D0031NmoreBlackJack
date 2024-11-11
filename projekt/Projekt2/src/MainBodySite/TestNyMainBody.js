@@ -1,58 +1,88 @@
 import React, {useEffect, useState} from "react";
 import './TestNyMainBody.css';
+import { useGrades } from './UseGradesState.js'; //importera state grejen med alla useStates och grajsor
+//jag vette fortfarande inte om man får göra detta, och jag vågar inte fråga
+//iingen läser endå
+//jag har ingen aning om vad jag gör
 
-function Canvas(){
-    const [uppgiftId, setUppgiftId] = useState("1");
+function Canvas() {
+    const { //deklarera alla states som behövs för att kunna använda dem i komponenterna
+        kursId, setKursId,
+        kursKod, setKursKod,
+        uppgiftId, setUppgiftId,
+        modul, setModul,
+        assignments,
+        modules,
+        grades,
+    } = useGrades();
 
-    return(
+    return (
         <div className="canvas">
-            <Upper setUppgiftId = {setUppgiftId}/>
-            <Middle/>
-            <Lower/>
+            <Upper
+                setKursId={setKursId} //skicka med alla "states" till komponenterna eller funktioner kanske??!
+                setKursKod={setKursKod}//vet inte om man kallar det states men
+                setUppgiftId={setUppgiftId}
+                setModul={setModul}
+                assignments={assignments}
+                modules={modules}
+            />
+            <Middle />
+            <Lower grades={grades} />
         </div>
-    )
+    );
 }
 
-function Upper(){
-    const [kursID, setKursID] = useState("1"); // Default to "1" or any initial value
-    const [kursKod, setKursKod] = useState(""); // State for kursKod
-
-
-    const handleKursIDChange = (event) => {
-        setKursID(event.target.value);
-    };
-
-    return(
+function Upper({ setKursId, setKursKod, setUppgiftId, setModul, assignments, modules }) {
+//samma här som i Canvas funktionen, skickar funktionerna och alla "states" till deras komponenter
+    return (
         <div className="upper">
-            <div className = "upper-upperbox">
-                <div className="thingy">Canvas To ladok</div>
-                <div className="kursIDdropDown" style={{gridColumn: 3}}>
-                    KursID:
-                    <select value={kursID} onChange={handleKursIDChange}>
-                        <option value='1'>1</option>
-                        <option value='2'>2</option>
-                    </select>
-                </div>
-            </div>
+            <KursID setKursId={setKursId} />
             <div className="upper-lower">
-                <UpperKursKod setKursKod = {setKursKod}/>
-                <UpperUppgift kursID={kursID}/>
-                <UpperModul kursKod={kursKod}/>
+                <UpperKursKod setKursKod={setKursKod} />
+                <UpperUppgift setUppgiftId={setUppgiftId} assignments={assignments}/>
+                <UpperModul modules={modules} setModul={setModul}/>
             </div>
         </div>
-    )
+    );
 }
 
-function UpperKursKod({ setKursKod }) {
+function KursID({setKursId}) {
+    //när du ändrar kursID här så uppdateras "UserGradesState.js" kursID och då callas
+    //fetchAssignments som hämtar alla uppgifter för den kursen
+
+    return (
+        <div className="upper-upperbox">
+            <div className="thingy">Canvas To ladok</div>
+            <div className="kursIDdropDown" style={{gridColumn: 3}}>
+                KursID:
+                <select onChange={(e) => setKursId(e.target.value)}>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                </select>
+            </div>
+        </div>
+    );
+}
+
+
+function UpperKursKod({setKursKod}) {
+    //när du ändrar kursKod här så uppdateras "UserGradesState.js" kursKod och då callas
+    //fetchModules som hämtar alla moduler för den kursen
+
+
+    //variable som sparar vad du har skrivit i kursKods grejen
     const [inputValue, setInputValue] = useState(''); // Local state to store input value
 
+
+    //function som körs när du trycker på "Search" knappen
     const handleInputChange = (event) => {
         setInputValue(event.target.value); // Update local input value as the user types
     };
 
+    //basicly du ändrar staten av kursKod till det du har skrivit i inputen
     const handleKursKodChange = () => {
-        setKursKod(inputValue); // Pass the input value to setKursKod when "Search" is clicked
-        console.log('Selected kursKod:', inputValue); // Log the selected kursKod
+        setKursKod(inputValue); // du kör "funktionen" som du skickade med från Upper komponenten
+        console.log('Selected kursKod:', inputValue);
     };
 
     return (
@@ -62,121 +92,40 @@ function UpperKursKod({ setKursKod }) {
                 <input
                     className="kursKodText"
                     value={inputValue}
-                    onChange={handleInputChange} // Update inputValue state on change
+                    onChange={handleInputChange} // när du skriver så uppdateras den lokala variabeln
                 />
-                <button onClick={handleKursKodChange}>Search</button>
+                <button onClick={handleKursKodChange}>Search</button> {/* när du trycker på knappen så uppdateras kursKod till det du har skrivit */}
             </div>
         </div>
     );
 }
-function UpperUppgift({kursID},{setUppgiftId}) {
-    const [assignments, setAssignments] = useState([]);
-
-    const fetchAssignments = async () => {
-        try {
-            const response = await fetch(`/get_Assignments?courseID=${kursID}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-            }
-
-            // Parse JSON response
-            const data = await response.json();
-            console.log('Fetched data:', data); // Log full response for debugging
-
-            // Check if the expected structure matches
-            if (data.length > 0 && data[0].assignments) {
-                setAssignments(data[0].assignments);
-                console.log(data[0].assignments);
-            } else {
-                console.error('Unexpected data structure:', data);
-            }
-        } catch (error) {
-            console.error('Network or server error', error);
-            console.log('Failed to fetch assignments');
-        }
-    };
-
-    // Use useEffect to call fetchAssignments when kursID changes
-    useEffect(() => {
-        if (kursID) {
-            fetchAssignments();
-        }
-    }, [kursID]); // Dependency array includes kursID
-
-    // Removed useEffect to prevent auto-fetching on component mount
-
+function UpperUppgift({setUppgiftId, assignments}) {
+//mappar grejer till grejer
+    //uppdaterar sedan state???!
     return (
-            <div className="uppgiftDropDown">
-                Välj Uppgift Att Registrera
-                <select>
-                    {assignments.map((assignment, index) => (
-                        <option key={index} value={assignment.courseAssignmentID}>{assignment.assignmentName}</option>
-                    ))}
-                </select>
-            </div>
-
+        <div className="uppgiftDropDown">
+            Välj Uppgift Att Registrera
+            <select onChange={(e) => setUppgiftId(e.target.value)}>
+                {assignments.map((assignment) => (
+                    <option key={assignment.courseAssignmentID} value={assignment.courseAssignmentID}>
+                        {assignment.assignmentName}
+                    </option>
+                ))}
+            </select>
+        </div>
     );
 }
 
 
 
-function UpperModul({kursKod}){
 
-    const [moduler, setModuler] = useState([]);
-
-    const fetchModuler = async () => {
-        try {
-            const response = await fetch(`/get_Modul?kursKod=${kursKod}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            console.log('Fetched data:', data);
-
-            if (data.length > 0 && data[0].Modules) {
-                setModuler(data[0].Modules);
-                console.log(data[0].Modules);
-            }else{
-                console.error('Unexpected data structure:', data);
-                setModuler([]);
-
-            }
-        } catch (error) {
-            console.error('Network or server error', error);
-            console.log('Failed to fetch moduler');
-            setModuler([]);
-        }
-
-    };
-
-    useEffect(() => {
-        if (kursKod) {
-            fetchModuler();
-        } else {
-            setModuler([]);
-        }
-    }, [kursKod]); // Trigger fetching when kursKod changes
-
-
-
+function UpperModul({modules, setModul}){
+//mappar moduler till moduler och uppdaterar state
     return(
             <div className="uppgiftDropDown">
                 Modul i Ladok
-                <select>
-                    {moduler.map((modul, index) => (
+                <select onChange={(e) => setModul(e.target.value)}>
+                    {modules.map((modul, index) => (
                         <option key={index} value={modul.modulID}>{modul.modulNamn}</option>
                     ))}
                 </select>
@@ -185,6 +134,8 @@ function UpperModul({kursKod}){
 }
 
 function Middle(){
+
+    //mycket användbar för tillfället
     return(
         <div className="middle">
             <h1>Middle</h1>
@@ -193,48 +144,40 @@ function Middle(){
 
 }
 
-function Lower(){
-    return(
+function Lower({ grades}) {
+    console.log("Grades in Lower component:", grades);
+ //tar emot grades från UserGradesState.js och mappar dem till en tabell
+    return (
         <div className="lower">
-            <table id={'students'}>
+            <table id="students">
+                <thead>
                 <tr>
                     <th>Namn</th>
                     <th>Omdöme i Canvas</th>
-                    <th>Betyg i Ladok</th>
                     <th>Examinationsdatum</th>
-                    <th>Status</th>
-                    <th>Information</th>
                 </tr>
-                <tr>
-                    <td>Henrik Ravnborg</td>
-                    <td>VG (Very Good)</td>
-                    <td>A</td>
-                    <td>2023-05-15</td>
-                    <td>Approved</td>
-                    <td>All assignments completed</td>
-                </tr>
-                <tr>
-                    <td>Maria Andersson</td>
-                    <td>G (Good)</td>
-                    <td>B</td>
-                    <td>2023-06-10</td>
-                    <td>Approved</td>
-                    <td>Additional assignment required</td>
-                </tr>
-                <tr>
-                    <td>Christina Berglund</td>
-                    <td>U (Unsatisfactory)</td>
-                    <td>F</td>
-                    <td>2023-04-20</td>
-                    <td>Not Approved</td>
-                    <td>Re-exam required</td>
-                </tr>
+                </thead>
+                <tbody>
+                {grades.length > 0 ? ( // om betyg finns, mappa till en tabell
+                    grades.map((grade, index) => (
+                        <tr key={index}>
+                            <td>{grade.firstName} {grade.lastName}</td>
+                            <td>{grade.assignmentGrade}</td>
+                            <td>{grade.date}</td>
+                        </tr>
+                    ))
+                ) : ( // om inga betyg finns, skriv ut att det inte finns några betyg
+                    <tr>
+                        <td colSpan="3">No grades available</td>
+                    </tr>
+                )}
+                </tbody>
             </table>
-
         </div>
-
-    )
-
+    );
 }
+
+
+
 
 export default Canvas;
