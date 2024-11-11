@@ -3,12 +3,13 @@
     display: flex;
     justify-content: center; /* Centers content horizontally */
     align-items: center; /* Centers content vertically (optional if needed) */
-    height: 60px; /* Adjust height as needed */
-    background-color: aquamarine;
-    font-family: fantasy;
+    height: 7vh; /* Adjust height as needed */
+    background-color: #243e6b;
+    font-family: aria-atomic, serif;
+    color: white;
     
   }
   
   .header-title {
-    color: blue;
+    color: white;
   }

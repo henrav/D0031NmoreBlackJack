@@ -39,6 +39,28 @@ app.get('/', (req, res) => {
 });
 
 
+// " curl "http://localhost:5001/get_Assignments?courseID=1" "
+app.get('/get_Assignments', async (req, res) => {
+    const querystring = 'CALL getAssignmentsForCourse(?)';
+    const courseID = req.query.courseID;
+
+    if (!courseID) {
+        res.status(400).send('Missing required query parameter: courseID');
+        return
+    }
+
+    db.query(querystring, [courseID], (err, results) => {
+        if (err) {
+            console.error('Failed to fetch assignments:', err);
+            res.status(500).send('Failed to fetch assignments');
+            return;
+        }
+        res.json(results[0]);
+
+    });
+});
+
+
 //"curl "http://localhost:5001/get_Modul?kursKod=D0031N""
 
 app.get('/get_Modul', async (req, res) => {
@@ -56,6 +78,7 @@ app.get('/get_Modul', async (req, res) => {
             return;
         }
         res.json(results[0]);
+        console.log(results[0]);
     });
 
 });
