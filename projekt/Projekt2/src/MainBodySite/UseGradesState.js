@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 // Hook för att hantera state för betyg och uppgifter
 // Returnerar state och funktioner för att uppdatera state
-//TestNyMainBody.js blir inte helt galet fullt av kod
+//TestNyMainBody.js blir inte helt galet fullt av kod om man gör detta
 //ingen aning om man "får" göra såhär eller om de finns bättre sätt att göra det men det funkar för budget projektet
 export const useGrades = (initialKursId = "1") => {
     const [kursId, setKursId] = useState(initialKursId); // bara lite data som behövs för att kunna hämta betyg och rävar
@@ -16,7 +16,7 @@ export const useGrades = (initialKursId = "1") => {
     const [modules, setModules] = useState([]);
     const [grades, setGrades] = useState([]);
 
-    // hämta betyg baserat på kursId
+    // hämta betyg baserat på kursId, körs när någon komponent ändrar kursId
     const fetchAssignments = async (courseId) => {   //så himla mycket syntax generellt i js att jag dampar
         setGrades([]); // Rensa betyg när nya uppgifter hämtas
         try {
@@ -44,20 +44,20 @@ export const useGrades = (initialKursId = "1") => {
         }
     };
 
-    // hämtar moduler baserat på kurskoden
+    // hämtar moduler baserat på kurskoden, körs när någon komponent ändrar kursKod
     const fetchModules = async (kod) => {
         try {
             const response = await fetch(`/get_Modul?kursKod=${kod}`);
             if (!response.ok) throw new Error(`Error: ${response.statusText}`);
             const data = await response.json();
-            setModules(data[0]?.Modules || []);
-        } catch (error) {
+            setModules(data[0]?.Modules || []); //än så länge vet jag inte vad "data[0]?" är men det funkar, "Modules" = min databaskod det vet jag
+        } catch (error) {                             //AS Modules FROM EpokModuler AS em
             console.error("Error fetching modules:", error);
             setModules([]);
         }
     };
 
-    // hämta betyg baserat på uppgiftId
+    // hämta betyg baserat på uppgiftId, körs när någon komponent ändrar uppgiftId
     const fetchGrades = async (assignmentId) => {
         if (!assignmentId) return;
         setGrades([]);
@@ -65,10 +65,39 @@ export const useGrades = (initialKursId = "1") => {
             const response = await fetch(`/getStudentGradesAssignment?assignmentId=${assignmentId}`);
             if (!response.ok) throw new Error(`Error: ${response.statusText}`);
             const data = await response.json();
-            setGrades(data[0]?.grades || []);
+
+            const newGrades = data[0]?.grades || []; // Get the new grades or empty array
+            setGrades(newGrades); // Update the grades state
+
+            // Fetch PNRs using the new grades directly, avoiding the outdated state
+            fetchPNR(newGrades);
+
         } catch (error) {
             console.error("Error fetching grades:", error);
             setGrades([]);
+        }
+    };
+
+    const fetchPNR = async (grades) => {
+        try {
+            // Använd Promise.all och map för att göra parallella asynkrona anrop
+            const updatedGrades = await Promise.all(
+                grades.map(async (grade) => {
+                    try {
+                        const response = await fetch(`/get_Persnummer?userName=${grade.studUser}`);
+                        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+                        const data = await response.json();
+                        grade.PNR = data[0]?.personNR || ""; // Uppdatera PNR för varje grade
+                    } catch (error) {
+                        console.error(`Error fetching PNR for student ${grade.studUser}:`, error);
+                        grade.PNR = ""; // Sätt tomt värde vid fel
+                    }
+                    return grade; // Returnera det uppdaterade grade-objektet
+                })
+            );
+            setGrades(updatedGrades); // Uppdatera grades med PNR-värden
+        } catch (error) {
+            console.error("Error fetching PNR:", error);
         }
     };
 
@@ -88,6 +117,7 @@ export const useGrades = (initialKursId = "1") => {
     useEffect(() => {
         if (uppgiftId) fetchGrades(uppgiftId);
     }, [uppgiftId]);
+
 
     return {
         kursId, setKursId,

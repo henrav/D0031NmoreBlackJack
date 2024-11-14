@@ -122,6 +122,7 @@ app.get('/get_Persnummer', async (req, res) => {
         }
         res.json(results[0]);
     });
+
 });
 
 

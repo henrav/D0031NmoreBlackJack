@@ -100,7 +100,7 @@ function UpperKursKod({setKursKod}) {
     );
 }
 function UpperUppgift({setUppgiftId, assignments}) {
-//mappar grejer till grejer
+    //mappar grejer till grejer
     //uppdaterar sedan state???!
     return (
         <div className="uppgiftDropDown">
@@ -120,7 +120,7 @@ function UpperUppgift({setUppgiftId, assignments}) {
 
 
 function UpperModul({modules, setModul}){
-//mappar moduler till moduler och uppdaterar state
+    //mappar moduler till moduler och uppdaterar state
     return(
             <div className="uppgiftDropDown">
                 Modul i Ladok
@@ -153,8 +153,10 @@ function Lower({ grades}) {
                 <thead>
                 <tr>
                     <th>Namn</th>
+                    <th>AnvändarNamn</th>
                     <th>Omdöme i Canvas</th>
                     <th>Examinationsdatum</th>
+                    <th>Personnummer</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -162,8 +164,10 @@ function Lower({ grades}) {
                     grades.map((grade, index) => (
                         <tr key={index}>
                             <td>{grade.firstName} {grade.lastName}</td>
+                            <td>{grade.studUser}</td>
                             <td>{grade.assignmentGrade}</td>
                             <td>{grade.date}</td>
+                            <td>{grade.PNR}</td>
                         </tr>
                     ))
                 ) : ( // om inga betyg finns, skriv ut att det inte finns några betyg
