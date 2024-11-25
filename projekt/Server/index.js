@@ -5,6 +5,7 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 require('dotenv').config();
 const mysql2 = require('mysql2/promise');
+const {response} = require("express");
 app.use(express.json());
 
 //skapa databas
@@ -125,41 +126,53 @@ app.get('/get_Persnummer', async (req, res) => {
 
 });
 
-
 app.post('/reg_Resultat', async (req, res) => {
-    const querystring = 'INSERT INTO LadokDB (personNR, förNamn ,efterNamn, betyg, ExDatum, modul, kursKod) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    const querystring = 'INSERT INTO LadokDB (personNR, förNamn, efterNamn, betyg, ExDatum, modul, kursKod) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    const { Modul, KursKod, ELEVER } = req.body.grade;
 
-    if (!req.body.grades || !Array.isArray(req.body.grades) || req.body.grades.length === 0) {
-        res.status(400).send('Body should have a "grades" array with entries');
-        return;
+    if (!Modul || !KursKod || !ELEVER) {
+        res.status(400).send('Missing required body parameters');
+        return; // End the request here
     }
 
-    for (let i = 0; i < req.body.grades.length; i++) {
-        const entry = req.body.grades[i];
+    const result = []; // Array to store the results for each student
 
-        if (!entry.personNR || !entry.förNamn || !entry.efterNamn|| !entry.betyg || !entry.ExDatum || !entry.modul || !entry.kursKod) {
-            res.status(400).send(`Missing required body parameters in entry at index ${i}`);
-            return;
+    for (const student of ELEVER) {
+        const { Pnr, förnamn, efternamn, betyg, datum } = student;
+
+        if (!Pnr || !förnamn || !efternamn || !betyg || !datum) {
+            console.error(`Missing parameters for student ${JSON.stringify(student)}`);
+            result.push({ Pnr, status: 'Failed', message: 'Missing required parameters' });
+            continue; // Skip this student and continue with the rest
         }
 
         try {
-            (await db2).query(querystring, [
-                entry.personNR,
-                entry.förNamn,
-                entry.efterNamn,
-                entry.betyg,
-                entry.ExDatum,
-                entry.modul,
-                entry.kursKod,
+            // Insert into the database
+            await (await db2).query(querystring, [
+                Pnr,
+                förnamn,
+                efternamn,
+                betyg,
+                datum,
+                Modul,
+                KursKod,
             ]);
         } catch (err) {
-            console.error('Failed to register resultat:', err);
-            res.status(500).send('Failed to register all resultat');
-            return;
+            if (err.code === 'ER_DUP_ENTRY') {
+                console.error(`Duplicate entry for student ${Pnr}`);
+                result.push({ Pnr, status: 'Duplicate Entry' });
+            } else {
+                console.error(`Database error for student ${Pnr}:`, err);
+                result.push({ Pnr, status: 'Failed', message: 'Database error' });
+            }
         }
     }
+    if (result.some(r => r.status === 'Failed' || r.status === 'Duplicate Entry')) {
+        res.status(207).json(result); // Partial success
+    } else {
+        res.status(200).json('All students registered successfully');
+    }
 
-    res.status(200).send('All resultat registered successfully');
 });
 
 

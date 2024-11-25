@@ -14,7 +14,7 @@ function Canvas() {
         assignments,
         modules,
         grades,
-        //registerResult
+        registerResult
     } = useGrades();
 
     return (
@@ -27,7 +27,7 @@ function Canvas() {
                 assignments={assignments}
                 modules={modules}
             />
-            <Middle grades={grades} /*registerGrades={registerResult}*/ />
+            <Middle grades={grades} registerGrades={registerResult} />
         </div>
     );
 }
@@ -134,7 +134,23 @@ function UpperModul({ modules, setModul }) {
 }
 
 function Middle({grades, registerGrades}) {
+    const [sendingGrades, setSendingGrades] = useState(false);
+    const handleRegister =  async () => {
+        setSendingGrades(true);
 
+        const result = await registerGrades();
+        console.log("Result from registerGrades:", result);
+
+        if (Array.isArray(result)) {//om en array då är det elever som redan har betyg registrerat, kanske inte bästa praxis men fan
+            const studenterSomRedanFinns = result.filter((r) => r.status === 'Duplicate Entry');
+            console.log("Students already registered:", studenterSomRedanFinns);
+            alert('Dessa elevers betyg har redan registrerats: ' + studenterSomRedanFinns.map((r) => r.Pnr).join(', '));
+        } else {
+            alert('Betygen har registrerats');
+        }
+
+        setSendingGrades(false);
+    }
 
 
 
@@ -156,7 +172,7 @@ function Middle({grades, registerGrades}) {
                     </div>
                     <div className={"middleContainer"}>
                         <div className={"överförContainer"}>
-                            <button >Överför</button>
+                            <button onClick={handleRegister} disabled={sendingGrades}>Överför</button>
                         </div>
                     </div>
                 </div>

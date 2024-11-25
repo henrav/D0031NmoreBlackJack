@@ -17,35 +17,41 @@ export const useGrades = (initialKursId = "1") => {
     const [grades, setGrades] = useState([]);
 
     // hämta betyg baserat på kursId, körs när någon komponent ändrar kursId
-/*
+
     const registerResult = async () => {
-        var grade = {
-            modul: modul,
-            kursKod: kursKod,
-            ELEVER: grades.map(({ PNR, assignmentGrade, date, firstName, lastName }) => ({
-                Pnr: PNR,
-                förnamn: firstName,
-                efternamn: lastName,
-                betyg: assignmentGrade,
-                datum: date,
-            })),
-        }
 
         try {
+            var grade = {
+                Modul: JSON.stringify(modul.modulID),
+                KursKod: kursKod,
+                ELEVER: grades.map(({ PNR, assignmentGrade, date, firstName, lastName }) => ({
+                    Pnr: PNR,
+                    förnamn: firstName,
+                    efternamn: lastName,
+                    betyg: assignmentGrade,
+                    datum: date,
+                })),
+            }
             const response = await fetch('/reg_Resultat', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({grade})
+                body: JSON.stringify({ grade }),
             });
-            if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-            console.log("Result registered successfully");
+
+            if (!response.ok) {
+                const errorDetails = await response.json();
+                console.error('Error response:', errorDetails);
+                return errorDetails; // Return an empty array if there's an error
+            }
+            const result = await response.json();
+            return result; // Return the response result
         } catch (error) {
-            console.error("Error registering result:", error);
+            console.error("Error registering result:", error.message);
         }
     }
-*/
+
 
     const fetchAssignments = async (courseId) => {   //så himla mycket syntax generellt i js att jag dampar
         setGrades([]); // Rensa betyg när nya uppgifter hämtas
@@ -76,11 +82,14 @@ export const useGrades = (initialKursId = "1") => {
 
     // hämtar moduler baserat på kurskoden, körs när någon komponent ändrar kursKod
     const fetchModules = async (kod) => {
+        setModul(null); // Rensa modul när nya moduler hämtas
+        setModules([]); // Rensa moduler när nya moduler hämtas
         try {
             const response = await fetch(`/get_Modul?kursKod=${kod}`);
             if (!response.ok) throw new Error(`Error: ${response.statusText}`);
             const data = await response.json();
             setModules(data[0]?.Modules || []); //än så länge vet jag inte vad "data[0]?" är men det funkar, "Modules" = min databaskod det vet jag
+            setModul(data[0]?.Modules[0] || null); // Sätt första modul som default (om det finns någon
         } catch (error) {                             //AS Modules FROM EpokModuler AS em
             console.error("Error fetching modules:", error);
             setModules([]);
@@ -157,6 +166,6 @@ export const useGrades = (initialKursId = "1") => {
         assignments,
         modules,
         grades,
-        //registerResult
+        registerResult
     };
 };
