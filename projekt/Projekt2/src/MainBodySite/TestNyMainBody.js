@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import './TestNyMainBody.css';
 import { useGrades } from './UseGradesState.js'; //importera state grejen med alla useStates och grajsor
 //jag vette fortfarande inte om man får göra detta, och jag vågar inte fråga
@@ -33,27 +33,27 @@ function Canvas() {
 }
 
 function Upper({ setKursId, setKursKod, setUppgiftId, setModul, assignments, modules }) {
-//samma här som i Canvas funktionen, skickar funktionerna och alla "states" till deras komponenter
+    //samma här som i Canvas funktionen, skickar funktionerna och alla "states" till deras komponenter
     return (
         <div className="upper">
             <KursID setKursId={setKursId} />
             <div className="upper-lower">
                 <UpperKursKod setKursKod={setKursKod} />
-                <UpperUppgift setUppgiftId={setUppgiftId} assignments={assignments}/>
-                <UpperModul modules={modules} setModul={setModul}/>
+                <UpperUppgift setUppgiftId={setUppgiftId} assignments={assignments} />
+                <UpperModul modules={modules} setModul={setModul} />
             </div>
         </div>
     );
 }
 
-function KursID({setKursId}) {
+function KursID({ setKursId }) {
     //när du ändrar kursID här så uppdateras "UserGradesState.js" kursID och då callas
     //fetchAssignments som hämtar alla uppgifter för den kursen
 
     return (
         <div className="upper-upperbox">
             <div className="thingy">Canvas To ladok</div>
-            <div className="kursIDdropDown" style={{gridColumn: 3}}>
+            <div className="kursIDdropDown" style={{ gridColumn: 3 }}>
                 KursID:
                 <select onChange={(e) => setKursId(e.target.value)}>
                     <option value="1">1</option>
@@ -65,7 +65,7 @@ function KursID({setKursId}) {
 }
 
 
-function UpperKursKod({setKursKod}) {
+function UpperKursKod({ setKursKod }) {
     //när du ändrar kursKod här så uppdateras "UserGradesState.js" kursKod och då callas
     //fetchModules som hämtar alla moduler för den kursen
 
@@ -99,7 +99,7 @@ function UpperKursKod({setKursKod}) {
         </div>
     );
 }
-function UpperUppgift({setUppgiftId, assignments}) {
+function UpperUppgift({ setUppgiftId, assignments }) {
     //mappar grejer till grejer
     //uppdaterar sedan state???!
     return (
@@ -119,24 +119,24 @@ function UpperUppgift({setUppgiftId, assignments}) {
 
 
 
-function UpperModul({modules, setModul}){
+function UpperModul({ modules, setModul }) {
     //mappar moduler till moduler och uppdaterar state
-    return(
-            <div className="uppgiftDropDown">
-                Modul i Ladok
-                <select onChange={(e) => setModul(e.target.value)}>
-                    {modules.map((modul, index) => (
-                        <option key={index} value={modul.modulID}>{modul.modulNamn}</option>
-                    ))}
-                </select>
-            </div>
+    return (
+        <div className="uppgiftDropDown">
+            Modul i Ladok
+            <select onChange={(e) => setModul(e.target.value)}>
+                {modules.map((modul, index) => (
+                    <option key={index} value={modul.modulID}>{modul.modulNamn}</option>
+                ))}
+            </select>
+        </div>
     )
 }
 
-function Middle(){
+function Middle() {
 
     //mycket användbar för tillfället
-    return(
+    return (
         <div className="middle">
             <h1>Middle</h1>
         </div>
@@ -144,42 +144,43 @@ function Middle(){
 
 }
 
-function Lower({ grades}) {
-    console.log("Grades in Lower component:", grades);
- //tar emot grades från UserGradesState.js och mappar dem till en tabell
+function Lower({ grades }) {
+
+
     return (
         <div className="lower">
             <table id="students">
                 <thead>
-                <tr>
-                    <th>Namn</th>
-                    <th>AnvändarNamn</th>
-                    <th>Omdöme i Canvas</th>
-                    <th>Examinationsdatum</th>
-                    <th>Personnummer</th>
-                </tr>
+                    <tr>
+                        <th>Namn</th>
+                        <th>Omdöme i Canvas</th>
+                        <th>Examinationsdatum</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {grades.length > 0 ? ( // om betyg finns, mappa till en tabell
-                    grades.map((grade, index) => (
-                        <tr key={index}>
-                            <td>{grade.firstName} {grade.lastName}</td>
-                            <td>{grade.studUser}</td>
-                            <td>{grade.assignmentGrade}</td>
-                            <td>{grade.date}</td>
-                            <td>{grade.PNR}</td>
+                    {grades.length > 0 ? (
+                        grades.map((grade, index) => (
+                            <tr key={index}>
+                                <td style={{ position: 'relative' }}>
+                                    {grade.firstName} {grade.lastName}
+                                    <span className="tooltip">{JSON.stringify(grade.PNR)}</span>
+                                </td>
+                                <td>{grade.assignmentGrade}</td>
+                                <td>{grade.date}</td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="3">No grades available</td>
                         </tr>
-                    ))
-                ) : ( // om inga betyg finns, skriv ut att det inte finns några betyg
-                    <tr>
-                        <td colSpan="3">No grades available</td>
-                    </tr>
-                )}
+                    )}
                 </tbody>
             </table>
         </div>
     );
 }
+
+
 
 
 
