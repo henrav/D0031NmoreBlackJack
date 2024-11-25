@@ -127,7 +127,7 @@ app.get('/get_Persnummer', async (req, res) => {
 
 
 app.post('/reg_Resultat', async (req, res) => {
-    const querystring = 'INSERT INTO LadokDB (personNR, förNamn ,efterNamn, betyg, ExDatum, modul, kursKod, kursNamn) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+    const querystring = 'INSERT INTO LadokDB (personNR, förNamn ,efterNamn, betyg, ExDatum, modul, kursKod) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
     if (!req.body.grades || !Array.isArray(req.body.grades) || req.body.grades.length === 0) {
         res.status(400).send('Body should have a "grades" array with entries');
@@ -137,7 +137,7 @@ app.post('/reg_Resultat', async (req, res) => {
     for (let i = 0; i < req.body.grades.length; i++) {
         const entry = req.body.grades[i];
 
-        if (!entry.personNR || !entry.förNamn || !entry.efterNamn|| !entry.betyg || !entry.ExDatum || !entry.modul || !entry.kursKod || !entry.kursNamn) {
+        if (!entry.personNR || !entry.förNamn || !entry.efterNamn|| !entry.betyg || !entry.ExDatum || !entry.modul || !entry.kursKod) {
             res.status(400).send(`Missing required body parameters in entry at index ${i}`);
             return;
         }
@@ -151,7 +151,6 @@ app.post('/reg_Resultat', async (req, res) => {
                 entry.ExDatum,
                 entry.modul,
                 entry.kursKod,
-                entry.kursNamn
             ]);
         } catch (err) {
             console.error('Failed to register resultat:', err);

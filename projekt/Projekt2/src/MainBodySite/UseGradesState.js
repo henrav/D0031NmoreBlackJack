@@ -11,12 +11,42 @@ export const useGrades = (initialKursId = "1") => {
     const [kursKod, setKursKod] = useState(""); // funktioner för att sätta dem som skickas vidare till komponenter
     const [uppgiftId, setUppgiftId] = useState(1); // så när någon komponent ändrar kursId så uppdateras det här
     const [modul, setModul] = useState(null);
-
+    const [fullgrade, setFullgrade] = useState([]);
     const [assignments, setAssignments] = useState([]);
     const [modules, setModules] = useState([]);
     const [grades, setGrades] = useState([]);
 
     // hämta betyg baserat på kursId, körs när någon komponent ändrar kursId
+/*
+    const registerResult = async () => {
+        var grade = {
+            modul: modul,
+            kursKod: kursKod,
+            ELEVER: grades.map(({ PNR, assignmentGrade, date, firstName, lastName }) => ({
+                Pnr: PNR,
+                förnamn: firstName,
+                efternamn: lastName,
+                betyg: assignmentGrade,
+                datum: date,
+            })),
+        }
+
+        try {
+            const response = await fetch('/reg_Resultat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({grade})
+            });
+            if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+            console.log("Result registered successfully");
+        } catch (error) {
+            console.error("Error registering result:", error);
+        }
+    }
+*/
+
     const fetchAssignments = async (courseId) => {   //så himla mycket syntax generellt i js att jag dampar
         setGrades([]); // Rensa betyg när nya uppgifter hämtas
         try {
@@ -127,5 +157,6 @@ export const useGrades = (initialKursId = "1") => {
         assignments,
         modules,
         grades,
+        //registerResult
     };
 };

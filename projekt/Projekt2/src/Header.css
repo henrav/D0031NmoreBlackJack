@@ -7,6 +7,10 @@
     background-color: #243e6b;
     font-family: aria-atomic, serif;
     color: white;
+    width: 100%;
+    padding: 10px;
+    border-radius: 1vh;
+    justify-self: center;
     
   }
   

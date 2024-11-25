@@ -14,6 +14,7 @@ function Canvas() {
         assignments,
         modules,
         grades,
+        //registerResult
     } = useGrades();
 
     return (
@@ -26,8 +27,7 @@ function Canvas() {
                 assignments={assignments}
                 modules={modules}
             />
-            <Middle />
-            <Lower grades={grades} />
+            <Middle grades={grades} /*registerGrades={registerResult}*/ />
         </div>
     );
 }
@@ -133,39 +133,66 @@ function UpperModul({ modules, setModul }) {
     )
 }
 
-function Middle() {
+function Middle({grades, registerGrades}) {
+
+
+
 
     //mycket användbar för tillfället
     return (
-        <div className="middle">
-            <h1>Middle</h1>
-        </div>
-    )
+            <div className={"main"}>
+                <div className="middle">
+                    <div className={"middleContainer"}>
+                        <div className={"markeraContainer"}>
+                            <button>Markera Alla</button>
+                            <button>Överför</button>
+
+                        </div>
+                    </div>
+                    <div className={"middleContainer"}>
+                        < div className = {"datumContainer"} >
+
+                        < /div>
+                    </div>
+                    <div className={"middleContainer"}>
+                        <div className={"överförContainer"}>
+                            <button >Överför</button>
+                        </div>
+                    </div>
+                </div>
+                <Lower grades={grades}/>
+            </div>
+        )
+
 
 }
 
-function Lower({ grades }) {
-
-
+function Lower({grades}) {
     return (
         <div className="lower">
             <table id="students">
-                <thead>
+            <thead>
                     <tr>
+                        <th></th>
                         <th>Namn</th>
                         <th>Omdöme i Canvas</th>
+                        <th>Omdöme i Ladok</th>
                         <th>Examinationsdatum</th>
                     </tr>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     {grades.length > 0 ? (
                         grades.map((grade, index) => (
                             <tr key={index}>
-                                <td style={{ position: 'relative' }}>
+                                <td id="checkMark">
+                                    <input type="checkbox"/>
+                                </td>
+                                <td id="firstLastName">
                                     {grade.firstName} {grade.lastName}
                                     <span className="tooltip">{JSON.stringify(grade.PNR)}</span>
                                 </td>
                                 <td>{grade.assignmentGrade}</td>
+                                <td>{grade.ladokGrade}</td>
                                 <td>{grade.date}</td>
                             </tr>
                         ))
@@ -174,15 +201,12 @@ function Lower({ grades }) {
                             <td colSpan="3">No grades available</td>
                         </tr>
                     )}
-                </tbody>
-            </table>
-        </div>
+                    </tbody>
+                </table>
+            </div>
+
     );
 }
-
-
-
-
 
 
 export default Canvas;
