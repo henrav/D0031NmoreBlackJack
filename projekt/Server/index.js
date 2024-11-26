@@ -131,18 +131,25 @@ app.post('/reg_Resultat', async (req, res) => {
     const { Modul, KursKod, ELEVER } = req.body.grade;
 
     if (!Modul || !KursKod || !ELEVER) {
-        res.status(400).send('Missing required body parameters');
+        res.status(400).json({
+            status:'error',
+            message:'missing required body parameters',
+            missingFields: ['Modul', 'KursKod', 'ELEVER']
+        });
         return; // End the request here
     }
 
-    const result = []; // Array to store the results for each student
+    const duplicates = [];
+    const failed = [];
+    const successes = [];
+
 
     for (const student of ELEVER) {
         const { Pnr, förnamn, efternamn, betyg, datum } = student;
 
         if (!Pnr || !förnamn || !efternamn || !betyg || !datum) {
             console.error(`Missing parameters for student ${JSON.stringify(student)}`);
-            result.push({ Pnr, status: 'Failed', message: 'Missing required parameters' });
+            failed.push(Pnr);
             continue; // Skip this student and continue with the rest
         }
 
@@ -160,17 +167,31 @@ app.post('/reg_Resultat', async (req, res) => {
         } catch (err) {
             if (err.code === 'ER_DUP_ENTRY') {
                 console.error(`Duplicate entry for student ${Pnr}`);
-                result.push({ Pnr, status: 'Duplicate Entry' });
+                duplicates.push(Pnr);
             } else {
                 console.error(`Database error for student ${Pnr}:`, err);
-                result.push({ Pnr, status: 'Failed', message: 'Database error' });
+                failed.push(Pnr);
             }
         }
     }
-    if (result.some(r => r.status === 'Failed' || r.status === 'Duplicate Entry')) {
-        res.status(207).json(result); // Partial success
-    } else {
-        res.status(200).json('All students registered successfully');
+    if (failed.length > 0){
+        res.status(207).json({
+            status: 'failed',
+            students: failed,
+            message: 'some students fucked up'
+        });
+    }else if (duplicates.length > 0){
+        res.status(207).json({
+            status: 'duplicate entries',
+            students: duplicates,
+            message: 'some students already have grades registered'
+        });
+    }else {
+        res.status(200).json({
+            status: 'ok',
+            students: successes,
+            message: 'All students registered successfully'
+        });
     }
 
 });

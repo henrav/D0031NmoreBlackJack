@@ -15,16 +15,32 @@ export const useGrades = (initialKursId = "1") => {
     const [assignments, setAssignments] = useState([]);
     const [modules, setModules] = useState([]);
     const [grades, setGrades] = useState([]);
+    const [selectedStudents, setSelectedStudents] = useState([]);
+
+    const toggleStudentSelection = (PNR) => {
+        setSelectedStudents((prevSelected) =>
+            prevSelected.includes(PNR)
+                ? prevSelected.filter((id) => id !== PNR)
+                : [...prevSelected, PNR]
+    );
+    };
+    const selectAllStudents = () => {
+        setSelectedStudents(grades.map((grade) => grade.PNR)); // Add all PNRs
+    };
+
+    const clearSelections = () => {
+        setSelectedStudents([]); // Reset the selection
+    };
 
     // hämta betyg baserat på kursId, körs när någon komponent ändrar kursId
 
-    const registerResult = async () => {
+    const registerResult = async (selectedGrades) => {
 
         try {
             var grade = {
                 Modul: JSON.stringify(modul.modulID),
                 KursKod: kursKod,
-                ELEVER: grades.map(({ PNR, assignmentGrade, date, firstName, lastName }) => ({
+                ELEVER: selectedGrades.map(({ PNR, assignmentGrade, date, firstName, lastName }) => ({
                     Pnr: PNR,
                     förnamn: firstName,
                     efternamn: lastName,
@@ -49,6 +65,11 @@ export const useGrades = (initialKursId = "1") => {
             return result; // Return the response result
         } catch (error) {
             console.error("Error registering result:", error.message);
+            return {
+                status: 'error',
+                message: 'An unexpected error occurred while registering grades',
+                details: error.message,
+            };
         }
     }
 
@@ -166,6 +187,10 @@ export const useGrades = (initialKursId = "1") => {
         assignments,
         modules,
         grades,
-        registerResult
+        registerResult,
+        selectedStudents,
+        toggleStudentSelection,
+        selectAllStudents,
+        clearSelections,
     };
 };

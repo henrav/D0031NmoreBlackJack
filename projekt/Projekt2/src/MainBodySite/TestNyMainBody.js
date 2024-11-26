@@ -14,7 +14,11 @@ function Canvas() {
         assignments,
         modules,
         grades,
-        registerResult
+        registerResult,
+        selectedStudents,
+        toggleStudentSelection,
+        selectAllStudents,
+        clearSelections,
     } = useGrades();
 
     return (
@@ -27,7 +31,7 @@ function Canvas() {
                 assignments={assignments}
                 modules={modules}
             />
-            <Middle grades={grades} registerGrades={registerResult} />
+            <Middle grades={grades} registerGrades={registerResult} selectAllStudents={selectAllStudents} toggleStudentSelection={toggleStudentSelection} clearAllStudents={clearSelections} selectedStudents={selectedStudents} />
         </div>
     );
 }
@@ -133,26 +137,34 @@ function UpperModul({ modules, setModul }) {
     )
 }
 
-function Middle({grades, registerGrades}) {
+function Middle({grades, registerGrades, selectAllStudents, clearAllStudents, selectedStudents, toggleStudentSelection}) {
     const [sendingGrades, setSendingGrades] = useState(false);
     const handleRegister =  async () => {
         setSendingGrades(true);
-
-        const result = await registerGrades();
-        console.log("Result from registerGrades:", result);
-
-        if (Array.isArray(result)) {//om en array då är det elever som redan har betyg registrerat, kanske inte bästa praxis men fan
-            const studenterSomRedanFinns = result.filter((r) => r.status === 'Duplicate Entry');
-            console.log("Students already registered:", studenterSomRedanFinns);
-            alert('Dessa elevers betyg har redan registrerats: ' + studenterSomRedanFinns.map((r) => r.Pnr).join(', '));
-        } else {
-            alert('Betygen har registrerats');
+        const selectedGrades = grades.filter((grade) => selectedStudents.includes(grade.PNR));
+        if (selectedGrades.length === 0){
+            alert('no inga elever valda');
+            setSendingGrades(false);
+            return;
+        }
+        const result = await registerGrades(selectedGrades);
+        switch (result.status) {
+            case 'ok':
+                alert('Grades registered successfully.');
+                break;
+            case 'duplicate entries':
+                alert(`Duplicate entries found: ${result.students.join(', ')}`);
+                break;
+            case 'error':
+                alert(`Error: ${result.message}\nDetails: ${result.details}`);
+                break;
+            default:
+                alert('Unexpected response from the server.');
+                console.error('Unexpected response:', result);
         }
 
         setSendingGrades(false);
     }
-
-
 
     //mycket användbar för tillfället
     return (
@@ -160,8 +172,8 @@ function Middle({grades, registerGrades}) {
                 <div className="middle">
                     <div className={"middleContainer"}>
                         <div className={"markeraContainer"}>
-                            <button>Markera Alla</button>
-                            <button>Överför</button>
+                            <button onClick={selectAllStudents}>Markera Alla</button>
+                            <button onClick={clearAllStudents}>Avmarkera Alla</button>
 
                         </div>
                     </div>
@@ -176,14 +188,14 @@ function Middle({grades, registerGrades}) {
                         </div>
                     </div>
                 </div>
-                <Lower grades={grades}/>
+                <Lower grades={grades} toggleStudentSelection={toggleStudentSelection} selectedStudents={selectedStudents}/>
             </div>
         )
 
 
 }
 
-function Lower({grades}) {
+function Lower({grades, toggleStudentSelection, selectedStudents}) {
     return (
         <div className="lower">
             <table id="students">
@@ -201,7 +213,9 @@ function Lower({grades}) {
                         grades.map((grade, index) => (
                             <tr key={index}>
                                 <td id="checkMark">
-                                    <input type="checkbox"/>
+                                    <input type="checkbox"
+                                    checked={selectedStudents.includes(grade.PNR)}
+                                    onChange={() => toggleStudentSelection(grade.PNR)}/>
                                 </td>
                                 <td id="firstLastName">
                                     {grade.firstName} {grade.lastName}
