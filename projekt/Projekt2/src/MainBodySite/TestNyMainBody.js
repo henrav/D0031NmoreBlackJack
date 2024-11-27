@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import './TestNyMainBody.css';
-import { useGrades } from './UseGradesState.js'; //importera state grejen med alla useStates och grajsor
-//jag vette fortfarande inte om man får göra detta, och jag vågar inte fråga
-//iingen läser endå
-//jag har ingen aning om vad jag gör
+import { useGrades } from './UseGradesState.js';
 
 function Canvas() {
-    const { //deklarera alla states som behövs för att kunna använda dem i komponenterna
+    const {
         kursId, setKursId,
         kursKod, setKursKod,
         uppgiftId, setUppgiftId,
@@ -14,26 +11,24 @@ function Canvas() {
         assignments,
         modules,
         grades,
-        //registerResult
     } = useGrades();
 
     return (
         <div className="canvas">
             <Upper
-                setKursId={setKursId} //skicka med alla "states" till komponenterna eller funktioner kanske??!
-                setKursKod={setKursKod}//vet inte om man kallar det states men
+                setKursId={setKursId}
+                setKursKod={setKursKod}
                 setUppgiftId={setUppgiftId}
                 setModul={setModul}
                 assignments={assignments}
                 modules={modules}
             />
-            <Middle grades={grades} /*registerGrades={registerResult}*/ />
+            <Middle grades={grades} />
         </div>
     );
 }
 
 function Upper({ setKursId, setKursKod, setUppgiftId, setModul, assignments, modules }) {
-    //samma här som i Canvas funktionen, skickar funktionerna och alla "states" till deras komponenter
     return (
         <div className="upper">
             <KursID setKursId={setKursId} />
@@ -47,12 +42,9 @@ function Upper({ setKursId, setKursKod, setUppgiftId, setModul, assignments, mod
 }
 
 function KursID({ setKursId }) {
-    //när du ändrar kursID här så uppdateras "UserGradesState.js" kursID och då callas
-    //fetchAssignments som hämtar alla uppgifter för den kursen
-
     return (
         <div className="upper-upperbox">
-            <div className="thingy">Canvas To ladok</div>
+            <div className="thingy">Canvas To Ladok</div>
             <div className="kursIDdropDown" style={{ gridColumn: 3 }}>
                 KursID:
                 <select onChange={(e) => setKursId(e.target.value)}>
@@ -64,24 +56,15 @@ function KursID({ setKursId }) {
     );
 }
 
-
 function UpperKursKod({ setKursKod }) {
-    //när du ändrar kursKod här så uppdateras "UserGradesState.js" kursKod och då callas
-    //fetchModules som hämtar alla moduler för den kursen
+    const [inputValue, setInputValue] = useState('');
 
-
-    //variable som sparar vad du har skrivit i kursKods grejen
-    const [inputValue, setInputValue] = useState(''); // Local state to store input value
-
-
-    //function som körs när du trycker på "Search" knappen
     const handleInputChange = (event) => {
-        setInputValue(event.target.value); // Update local input value as the user types
+        setInputValue(event.target.value);
     };
 
-    //basicly du ändrar staten av kursKod till det du har skrivit i inputen
     const handleKursKodChange = () => {
-        setKursKod(inputValue); // du kör "funktionen" som du skickade med från Upper komponenten
+        setKursKod(inputValue);
         console.log('Selected kursKod:', inputValue);
     };
 
@@ -92,16 +75,15 @@ function UpperKursKod({ setKursKod }) {
                 <input
                     className="kursKodText"
                     value={inputValue}
-                    onChange={handleInputChange} // när du skriver så uppdateras den lokala variabeln
+                    onChange={handleInputChange}
                 />
-                <button onClick={handleKursKodChange}>Search</button> {/* när du trycker på knappen så uppdateras kursKod till det du har skrivit */}
+                <button onClick={handleKursKodChange}>Search</button>
             </div>
         </div>
     );
 }
+
 function UpperUppgift({ setUppgiftId, assignments }) {
-    //mappar grejer till grejer
-    //uppdaterar sedan state???!
     return (
         <div className="uppgiftDropDown">
             Välj Uppgift Att Registrera
@@ -116,11 +98,7 @@ function UpperUppgift({ setUppgiftId, assignments }) {
     );
 }
 
-
-
-
 function UpperModul({ modules, setModul }) {
-    //mappar moduler till moduler och uppdaterar state
     return (
         <div className="uppgiftDropDown">
             Modul i Ladok
@@ -130,83 +108,86 @@ function UpperModul({ modules, setModul }) {
                 ))}
             </select>
         </div>
-    )
+    );
 }
 
-function Middle({grades, registerGrades}) {
-
-
-
-
-    //mycket användbar för tillfället
+function Middle({ grades }) {
     return (
-            <div className={"main"}>
-                <div className="middle">
-                    <div className={"middleContainer"}>
-                        <div className={"markeraContainer"}>
-                            <button>Markera Alla</button>
-                            <button>Överför</button>
-
-                        </div>
-                    </div>
-                    <div className={"middleContainer"}>
-                        < div className = {"datumContainer"} >
-
-                        < /div>
-                    </div>
-                    <div className={"middleContainer"}>
-                        <div className={"överförContainer"}>
-                            <button >Överför</button>
-                        </div>
+        <div className={"main"}>
+            <div className="middle">
+                <div className={"middleContainer"}>
+                    <div className={"markeraContainer"}>
+                        <button>Markera Alla</button>
                     </div>
                 </div>
-                <Lower grades={grades}/>
+                <div className={"middleContainer"}>
+                    <div className={"datumContainer"}></div>
+                </div>
+                <div className={"middleContainer"}>
+                    <div className={"överförContainer"}>
+                        <button>Överför</button>
+                    </div>
+                </div>
             </div>
-        )
-
-
+            <Lower grades={grades} />
+        </div>
+    );
 }
 
-function Lower({grades}) {
+function Lower({ grades }) {
+    const handleGradeChange = (studentIndex, newGrade) => {
+        console.log(`Grade for student ${grades[studentIndex].firstName} updated to ${newGrade}`);
+    };
+
     return (
         <div className="lower">
             <table id="students">
-            <thead>
+                <thead>
                     <tr>
                         <th></th>
                         <th>Namn</th>
                         <th>Omdöme i Canvas</th>
-                        <th>Omdöme i Ladok</th>
+                        <th>Välj Omdöme</th>
                         <th>Examinationsdatum</th>
                     </tr>
-                    </thead>
-                    <tbody>
+                </thead>
+                <tbody>
                     {grades.length > 0 ? (
                         grades.map((grade, index) => (
                             <tr key={index}>
                                 <td id="checkMark">
-                                    <input type="checkbox"/>
+                                    <input type="checkbox" />
                                 </td>
                                 <td id="firstLastName">
                                     {grade.firstName} {grade.lastName}
                                     <span className="tooltip">{JSON.stringify(grade.PNR)}</span>
                                 </td>
                                 <td>{grade.assignmentGrade}</td>
-                                <td>{grade.ladokGrade}</td>
+                                <td>
+                                    <select
+                                        defaultValue={grade.assignmentGrade} // Matchar Omdöme i Canvas typ
+                                        onChange={(e) => handleGradeChange(index, e.target.value)}
+                                    >
+                                        <option value="" disabled>
+                                            Välj betyg
+                                        </option>
+                                        <option value="F">F</option>
+                                        <option value="G">G</option>
+                                        <option value="VG">VG</option>
+                                    </select>
+                                </td>
                                 <td>{grade.date}</td>
                             </tr>
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="3">No grades available</td>
+                            <td colSpan="5">No grades available</td>
                         </tr>
                     )}
-                    </tbody>
-                </table>
-            </div>
-
+                </tbody>
+            </table>
+        </div>
     );
 }
-
 
 export default Canvas;
