@@ -19,6 +19,8 @@ function Canvas() {
         toggleStudentSelection,
         selectAllStudents,
         clearSelections,
+        changeDate,
+        changeGrade
     } = useGrades();
 
     return (
@@ -31,7 +33,12 @@ function Canvas() {
                 assignments={assignments}
                 modules={modules}
             />
-            <Middle grades={grades} registerGrades={registerResult} selectAllStudents={selectAllStudents} toggleStudentSelection={toggleStudentSelection} clearAllStudents={clearSelections} selectedStudents={selectedStudents} />
+            <Middle grades={grades} registerGrades={registerResult} selectAllStudents={selectAllStudents}
+                    toggleStudentSelection={toggleStudentSelection}
+                    clearAllStudents={clearSelections} selectedStudents={selectedStudents}
+                    changeDate={changeDate}
+                    changeGrade={changeGrade}
+                    modulID={modul}/>
         </div>
     );
 }
@@ -137,10 +144,15 @@ function UpperModul({ modules, setModul }) {
     )
 }
 
-function Middle({grades, registerGrades, selectAllStudents, clearAllStudents, selectedStudents, toggleStudentSelection}) {
+function Middle({grades, registerGrades, selectAllStudents, clearAllStudents, selectedStudents, toggleStudentSelection, changeDate, changeGrade, modulID}) {
     const [sendingGrades, setSendingGrades] = useState(false);
     const handleRegister =  async () => {
         setSendingGrades(true);
+        if (modulID === null){
+            alert('ingen modul vald');
+            setSendingGrades(false);
+            return;
+        }
         const selectedGrades = grades.filter((grade) => selectedStudents.includes(grade.PNR));
         if (selectedGrades.length === 0){
             alert('no inga elever valda');
@@ -188,14 +200,29 @@ function Middle({grades, registerGrades, selectAllStudents, clearAllStudents, se
                         </div>
                     </div>
                 </div>
-                <Lower grades={grades} toggleStudentSelection={toggleStudentSelection} selectedStudents={selectedStudents}/>
+                <Lower grades={grades} toggleStudentSelection={toggleStudentSelection}
+                       selectedStudents={selectedStudents} changeDate={changeDate}
+                        changeGrade={changeGrade}/>
             </div>
         )
 
 
 }
 
-function Lower({grades, toggleStudentSelection, selectedStudents}) {
+function Lower({grades, toggleStudentSelection, selectedStudents, changeDate, changeGrade}) {
+
+    const handleDateChanger = (PNR) => (event) =>{
+        const newDate = event.target.value;
+        changeDate(PNR, newDate);
+    }
+
+    const handleGradeChange = (PNR) => (event) =>{
+        const newGrade = event.target.value;
+        changeGrade(PNR, newGrade);
+    }
+
+
+
     return (
         <div className="lower">
             <table id="students">
@@ -222,8 +249,16 @@ function Lower({grades, toggleStudentSelection, selectedStudents}) {
                                     <span className="tooltip">{JSON.stringify(grade.PNR)}</span>
                                 </td>
                                 <td>{grade.assignmentGrade}</td>
-                                <td>{grade.ladokGrade}</td>
-                                <td>{grade.date}</td>
+                                <td>
+                                    <select defaultValue={grade.ladokGrade} onChange={handleGradeChange(grade.PNR)}>
+                                        <option value={"VG"}>VG</option>
+                                        <option value={"G"}>G</option>
+                                        <option value={"F"}>F</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type={'date'} onChange={handleDateChanger(grade.PNR)} defaultValue={grade.date.slice(0, 10)}/>
+                                </td>
                             </tr>
                         ))
                     ) : (

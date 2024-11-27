@@ -32,6 +32,18 @@ export const useGrades = (initialKursId = "1") => {
         setSelectedStudents([]); // Reset the selection
     };
 
+    const changeDate = (PNR, newDate) =>{
+        setGrades((prevGrades)=>
+            prevGrades.map((grade) =>
+            grade.PNR === PNR ? {...grade, date: newDate} : grade))
+    };
+
+    const changeGrade = (PNR, newGrade) => {
+        setGrades((prevGrades) =>
+            prevGrades.map((grade) =>
+            grade.PNR === PNR ? {...grade, ladokGrade: newGrade} : grade));
+    };
+
     // hämta betyg baserat på kursId, körs när någon komponent ändrar kursId
 
     const registerResult = async (selectedGrades) => {
@@ -40,11 +52,11 @@ export const useGrades = (initialKursId = "1") => {
             var grade = {
                 Modul: JSON.stringify(modul.modulID),
                 KursKod: kursKod,
-                ELEVER: selectedGrades.map(({ PNR, assignmentGrade, date, firstName, lastName }) => ({
+                ELEVER: selectedGrades.map(({ PNR, ladokGrade, date, firstName, lastName }) => ({
                     Pnr: PNR,
                     förnamn: firstName,
                     efternamn: lastName,
-                    betyg: assignmentGrade,
+                    betyg: ladokGrade,
                     datum: date,
                 })),
             }
@@ -126,8 +138,12 @@ export const useGrades = (initialKursId = "1") => {
             if (!response.ok) throw new Error(`Error: ${response.statusText}`);
             const data = await response.json();
 
-            const newGrades = data[0]?.grades || []; // Get the new grades or empty array
+            const newGrades = (data[0]?.grades || []).map((grade) => ({
+                ...grade,
+                ladokGrade: grade.ladokGrade || grade.assignmentGrade, // Set ladokGrade to assignmentGrade by default
+            }));
             setGrades(newGrades); // Update the grades state
+
 
             // Fetch PNRs using the new grades directly, avoiding the outdated state
             fetchPNR(newGrades);
@@ -192,5 +208,7 @@ export const useGrades = (initialKursId = "1") => {
         toggleStudentSelection,
         selectAllStudents,
         clearSelections,
+        changeDate,
+        changeGrade
     };
 };

@@ -130,13 +130,28 @@ app.post('/reg_Resultat', async (req, res) => {
     const querystring = 'INSERT INTO LadokDB (personNR, förNamn, efterNamn, betyg, ExDatum, modul, kursKod) VALUES (?, ?, ?, ?, ?, ?, ?)';
     const { Modul, KursKod, ELEVER } = req.body.grade;
 
-    if (!Modul || !KursKod || !ELEVER) {
+    if (!KursKod) {
         res.status(400).json({
             status:'error',
             message:'missing required body parameters',
-            missingFields: ['Modul', 'KursKod', 'ELEVER']
+            missingField:'KursKod'
         });
         return; // End the request here
+    }
+    if (!ELEVER){
+        res.status(400).json({
+            status:'error',
+            message:'missing required body parameters',
+            missingField:'ELEVER'
+        })
+    }
+
+    if (!Modul){
+        res.status(400).json({
+            status:'error',
+            message:'missing required body parameters',
+            missingField:'Modul'
+        })
     }
 
     const duplicates = [];
@@ -175,13 +190,13 @@ app.post('/reg_Resultat', async (req, res) => {
         }
     }
     if (failed.length > 0){
-        res.status(207).json({
+        res.status(400).json({
             status: 'failed',
             students: failed,
             message: 'some students fucked up'
         });
     }else if (duplicates.length > 0){
-        res.status(207).json({
+        res.status(400).json({
             status: 'duplicate entries',
             students: duplicates,
             message: 'some students already have grades registered'
