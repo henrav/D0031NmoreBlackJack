@@ -40,9 +40,9 @@
     margin: 1vh;
 }
 .middleContainer{
+    display: grid;
     justify-items: center;
     justify-content: center;
-
 }
 
 .upper {
@@ -203,23 +203,45 @@ td:hover .tooltip {
     text-align: left;
     background-color: #243e6b;
     color: white;
+
 }
 
 .markeraContainer{
-    display: grid;
-    grid-template-rows: 1fr 1fr;
+    display: flex;
+    height: fit-content;
     grid-gap: 10px;
-    height: 100%;
+
+
+    align-items: center;
 }
 .markeraContainer > *{
-    justify-self: left;
-    justify-items: left;
+
 }
 
 .datumContainer{
-
+    display: flex;
+    grid-gap: 10px;
+    align-items: center;
 }
 
 .överförContainer{
+    display: flex;
+    align-items: center;
+}
 
+.testContainer{
+    display: grid;
+    text-align: left;
+    height: fit-content;
+    justify-self: center;
+    align-self: center;
+    grid-gap: 10px;
+}
+.testContainer > *{
+    justify-self: center;
+}
+
+.testTextContainer{
+    justify-content: end;
+    justify-self: baseline;
 }

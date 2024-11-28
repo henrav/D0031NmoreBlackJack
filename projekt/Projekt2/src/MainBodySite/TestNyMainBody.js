@@ -20,7 +20,8 @@ function Canvas() {
         selectAllStudents,
         clearSelections,
         changeDate,
-        changeGrade
+        changeGrade,
+        changeDateForSelectedStudents
     } = useGrades();
 
     return (
@@ -38,7 +39,7 @@ function Canvas() {
                     clearAllStudents={clearSelections} selectedStudents={selectedStudents}
                     changeDate={changeDate}
                     changeGrade={changeGrade}
-                    modulID={modul}/>
+                    modulID={modul} changeDateForSelected={changeDateForSelectedStudents}/>
         </div>
     );
 }
@@ -144,8 +145,22 @@ function UpperModul({ modules, setModul }) {
     )
 }
 
-function Middle({grades, registerGrades, selectAllStudents, clearAllStudents, selectedStudents, toggleStudentSelection, changeDate, changeGrade, modulID}) {
+function getDate(){
+    return new Date().toISOString().split('T')[0];
+}
+
+function Middle({grades, registerGrades, selectAllStudents, clearAllStudents, selectedStudents, toggleStudentSelection, changeDate, changeGrade, modulID, changeDateForSelected}) {
     const [sendingGrades, setSendingGrades] = useState(false);
+    const [currentDate, setCurrrentDate] = useState(getDate());
+
+    const handleDateChange = (event)=>{
+        setCurrrentDate(event.target.value);
+    }
+
+    const handleChangeDateSelected = (event) => {
+        changeDateForSelected(currentDate);
+    }
+
     const handleRegister =  async () => {
         setSendingGrades(true);
         if (modulID === null){
@@ -162,17 +177,17 @@ function Middle({grades, registerGrades, selectAllStudents, clearAllStudents, se
         const result = await registerGrades(selectedGrades);
         switch (result.status) {
             case 'ok':
-                alert('Grades registered successfully.');
+                alert('SKIBIDI alla betyg blev registrerade ordentligt');
                 break;
             case 'duplicate entries':
-                alert(`Duplicate entries found: ${result.students.join(', ')}`);
+                alert(`en eller flera av eleverna har betyg registrerade redan: ${result.students.join(', ')}`);
                 break;
             case 'error':
                 alert(`Error: ${result.message}\nDetails: ${result.details}`);
                 break;
             default:
-                alert('Unexpected response from the server.');
-                console.error('Unexpected response:', result);
+                alert('ingen aning men något fel');
+                console.error('ingen aning men något fel', result);
         }
 
         setSendingGrades(false);
@@ -183,26 +198,36 @@ function Middle({grades, registerGrades, selectAllStudents, clearAllStudents, se
             <div className={"main"}>
                 <div className="middle">
                     <div className={"middleContainer"}>
-                        <div className={"markeraContainer"}>
-                            <button onClick={selectAllStudents}>Markera Alla</button>
-                            <button onClick={clearAllStudents}>Avmarkera Alla</button>
-
+                        <div className={'testContainer'}>
+                            <div className={'testTextContainer'}>Markera eleverna</div>
+                            <div className={"markeraContainer"}>
+                                <button onClick={selectAllStudents}>Markera Alla</button>
+                                <button onClick={clearAllStudents}>Avmarkera Alla</button>
+                            </div>
                         </div>
                     </div>
                     <div className={"middleContainer"}>
-                        < div className = {"datumContainer"} >
+                        <div className={'testContainer'}>
+                            <div className={'testTextContainer'}>välj datum för markerade</div>
+                            <div className={"datumContainer"}>
+                                <input type={'date'} value={currentDate} onChange={handleDateChange}/>
+                                <button onClick={handleChangeDateSelected}>Ok</button>
+                            </div>
+                        </div>
 
-                        < /div>
                     </div>
                     <div className={"middleContainer"}>
-                        <div className={"överförContainer"}>
-                            <button onClick={handleRegister} disabled={sendingGrades}>Överför</button>
+                        <div className={'testContainer'}>
+                            <div className={'testTextContainer'}>överför markerade till ladok</div>
+                            <div className={"överförContainer"}>
+                                <button onClick={handleRegister} disabled={sendingGrades}>Ok</button>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <Lower grades={grades} toggleStudentSelection={toggleStudentSelection}
                        selectedStudents={selectedStudents} changeDate={changeDate}
-                        changeGrade={changeGrade}/>
+                       changeGrade={changeGrade}/>
             </div>
         )
 
@@ -250,20 +275,20 @@ function Lower({grades, toggleStudentSelection, selectedStudents, changeDate, ch
                                 </td>
                                 <td>{grade.assignmentGrade}</td>
                                 <td>
-                                    <select defaultValue={grade.ladokGrade} onChange={handleGradeChange(grade.PNR)}>
+                                    <select value={grade.ladokGrade} onChange={handleGradeChange(grade.PNR)}>
                                         <option value={"VG"}>VG</option>
                                         <option value={"G"}>G</option>
                                         <option value={"F"}>F</option>
                                     </select>
                                 </td>
                                 <td>
-                                    <input type={'date'} onChange={handleDateChanger(grade.PNR)} defaultValue={grade.date.slice(0, 10)}/>
+                                    <input type={'date'} onChange={handleDateChanger(grade.PNR)} value={grade.date.slice(0, 10)}/>
                                 </td>
                             </tr>
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="3">No grades available</td>
+                            <td colSpan="5">No grades available</td>
                         </tr>
                     )}
                     </tbody>

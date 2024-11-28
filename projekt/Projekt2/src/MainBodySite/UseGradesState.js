@@ -44,6 +44,16 @@ export const useGrades = (initialKursId = "1") => {
             grade.PNR === PNR ? {...grade, ladokGrade: newGrade} : grade));
     };
 
+    const changeDateForSelectedStudents = (Date) =>{
+        setGrades((prevState) => //wtf betyder äns 90% av det här helt jävla omöjligt att fatta
+            prevState.map((grade) =>
+                selectedStudents.includes(grade.PNR)
+                ? {...grade, date: Date}
+                : grade
+            )
+        );
+    };
+
     // hämta betyg baserat på kursId, körs när någon komponent ändrar kursId
 
     const registerResult = async (selectedGrades) => {
@@ -76,10 +86,10 @@ export const useGrades = (initialKursId = "1") => {
             const result = await response.json();
             return result; // Return the response result
         } catch (error) {
-            console.error("Error registering result:", error.message);
+            console.error("Error när registrering skulle ske:", error.message);
             return {
                 status: 'error',
-                message: 'An unexpected error occurred while registering grades',
+                message: 'error när registrering skulle ske',
                 details: error.message,
             };
         }
@@ -88,6 +98,7 @@ export const useGrades = (initialKursId = "1") => {
 
     const fetchAssignments = async (courseId) => {   //så himla mycket syntax generellt i js att jag dampar
         setGrades([]); // Rensa betyg när nya uppgifter hämtas
+        setSelectedStudents([])
         try {
             const response = await fetch(`/get_Assignments?courseID=${courseId}`);
             if (!response.ok) throw new Error(`Error: ${response.statusText}`);
@@ -107,7 +118,7 @@ export const useGrades = (initialKursId = "1") => {
                 setGrades([]);
             }
         } catch (error) {
-            console.error("Error fetching assignments:", error);
+            console.error("shieet har hänt från fetchAssignments", error);
             setAssignments([]);
             setGrades([]);
         }
@@ -124,7 +135,7 @@ export const useGrades = (initialKursId = "1") => {
             setModules(data[0]?.Modules || []); //än så länge vet jag inte vad "data[0]?" är men det funkar, "Modules" = min databaskod det vet jag
             setModul(data[0]?.Modules[0] || null); // Sätt första modul som default (om det finns någon
         } catch (error) {                             //AS Modules FROM EpokModuler AS em
-            console.error("Error fetching modules:", error);
+            console.error("nånting fel i fetchModules:", error);
             setModules([]);
         }
     };
@@ -209,6 +220,7 @@ export const useGrades = (initialKursId = "1") => {
         selectAllStudents,
         clearSelections,
         changeDate,
-        changeGrade
+        changeGrade,
+        changeDateForSelectedStudents
     };
 };
